@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../src/lib/supabase';
 import { SortableTask } from '../src/components/SortableTask';
 import About from '../src/components/About';
+import Skills from '../src/components/Skills';
 
 type Task = {
   id: string;
@@ -89,6 +90,8 @@ export default function KanbanBoard() {
             <About />
           </div>
         </header>
+
+        <Skills />
 
         <div className="grid gap-6 md:grid-cols-3">
           {columns.map((column) => (
