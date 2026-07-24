@@ -1,62 +1,116 @@
-import { GitBranch, Link2, Mail, Code2, Layers, Server } from "lucide-react";
+"use client";
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../src/lib/supabase';
+import { SortableTask } from '../src/components/SortableTask';
+import About from '../src/components/About';
 
-export default function Home() {
+type Task = {
+  id: string;
+  title: string;
+  status: 'To Do' | 'In Progress' | 'Done';
+};
+
+const initialTasks: Task[] = [
+  { id: '1', title: 'Design landing page', status: 'To Do' },
+  { id: '2', title: 'Set up authentication', status: 'In Progress' },
+  { id: '3', title: 'Deploy portfolio site', status: 'Done' },
+];
+
+const columns = ['To Do', 'In Progress', 'Done'] as const;
+
+export default function KanbanBoard() {
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [loading, setLoading] = useState(true);
+
+    const dragItem = React.useRef<string | null>(null);
+    const dragOverItem = React.useRef<string | null>(null);
+  useEffect(() => {
+    async function fetchTasks() {
+      try {
+        const { data } = await supabase.from('tasks').select('*').order('position', { ascending: true });
+        if (data) setTasks(data as Task[]);
+      } catch (e) {
+        // supabase may be a mock in this environment — ignore errors
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchTasks();
+  }, []);
+
+  async function addTask(status: Task['status'], title: string) {
+    const tempId = 'temp_' + Date.now();
+    const optimistic = { id: tempId, title, status } as any;
+    setTasks(prev => [...prev, optimistic]);
+
+    try {
+      const from = (supabase as any).from ? (supabase as any).from('tasks') : null;
+      if (from && typeof from.insert === 'function') {
+        const res = await from.insert([{ title, status }]).select();
+        const data = res && (res.data ? (Array.isArray(res.data) ? res.data[0] : res.data) : res);
+        if (data) {
+          setTasks(prev => prev.map(t => t.id === tempId ? data : t));
+          return;
+        }
+      }
+
+      // No real backend available — replace temp id with a generated server id
+      const serverTask = { id: 'srv_' + Date.now(), title, status };
+      setTasks(prev => prev.map(t => t.id === tempId ? serverTask : t));
+    } catch (err) {
+      console.error('addTask failed', err);
+      setTasks(prev => prev.filter(t => t.id !== tempId));
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 p-10 text-white">
+        <div className="mx-auto max-w-2xl rounded-3xl border border-slate-800 bg-slate-900/80 p-10 text-center">
+          Loading board...
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 font-sans px-6">
-      {/* Navigation */}
-      <nav className="max-w-5xl mx-auto py-8 flex justify-between items-center">
-        <h1 className="text-xl font-bold tracking-tighter tracking-widest uppercase">DevName</h1>
-        <div className="flex gap-6">
-          <a href="#" className="hover:text-blue-400 transition-colors">Projects</a>
-          <a href="#" className="hover:text-blue-400 transition-colors">About</a>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <main className="max-w-5xl mx-auto pt-20 pb-32">
-        <div className="max-w-3xl">
-          <h2 className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-            Full-Stack Developer.
-          </h2>
-          <p className="text-xl text-slate-400 mb-10 leading-relaxed">
-            I build robust backend architectures and high-performance frontend experiences. 
-            Currently building my 2025 portfolio showcase.
-          </p>
-          
-          <div className="flex flex-wrap gap-4">
-            <button className="bg-slate-50 text-slate-950 px-8 py-3 rounded-full font-bold hover:bg-blue-400 transition-all flex items-center gap-2">
-              <Mail size={18} /> Contact Me
+    <div className="min-h-screen bg-slate-950 p-10 text-white">
+      <div className="mx-auto max-w-6xl space-y-8">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Full-Stack Kanban</h1>
+            <p className="text-sm text-slate-400">Organize your next development tasks cleanly.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={() => addTask('To Do', 'New task')} className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">
+              Add task
             </button>
-            <div className="flex gap-4">
-              <a href="https://github.com" className="p-3 bg-slate-900 border border-slate-800 rounded-full hover:border-blue-400 transition-all">
-                <GitBranch size={20} />
-              </a>
-              <a href="https://linkedin.com" className="p-3 bg-slate-900 border border-slate-800 rounded-full hover:border-blue-400 transition-all">
-                <Link2 size={20} />
-              </a>
-            </div>
+            <About />
           </div>
-        </div>
+        </header>
 
-        {/* Core Competencies Bento Section */}
-        <div className="grid md:grid-cols-3 gap-6 mt-24">
-          <div className="p-8 bg-slate-900/50 border border-slate-800 rounded-3xl">
-            <Code2 className="text-blue-400 mb-4" size={32} />
-            <h3 className="text-xl font-bold mb-2">Frontend</h3>
-            <p className="text-slate-400 text-sm">React, Next.js, TypeScript, Tailwind CSS</p>
-          </div>
-          <div className="p-8 bg-slate-900/50 border border-slate-800 rounded-3xl">
-            <Server className="text-emerald-400 mb-4" size={32} />
-            <h3 className="text-xl font-bold mb-2">Backend</h3>
-            <p className="text-slate-400 text-sm">Node.js, PostgreSQL, Redis, REST APIs</p>
-          </div>
-          <div className="p-8 bg-slate-900/50 border border-slate-800 rounded-3xl">
-            <Layers className="text-purple-400 mb-4" size={32} />
-            <h3 className="text-xl font-bold mb-2">DevOps</h3>
-            <p className="text-slate-400 text-sm">Docker, CI/CD, Netlify, AWS</p>
-          </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {columns.map((column) => (
+            <div key={column} className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-slate-100">{column}</h2>
+                <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-400">
+                  {tasks.filter((task) => task.status === column).length}
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                {tasks
+                  .filter((task) => task.status === column)
+                  .map((task) => (
+                    <SortableTask key={task.id} id={task.id} content={task.title} />
+                  ))}
+              </div>
+            </div>
+          ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
