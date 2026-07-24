@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../src/lib/supabase';
 import { SortableTask } from '../src/components/SortableTask';
 import About from '../src/components/About';
+import Dashboard from '../src/components/Dashboard';
 import Skills from '../src/components/Skills';
 
 type Task = {
@@ -87,11 +88,12 @@ export default function KanbanBoard() {
             <button onClick={() => addTask('To Do', 'New task')} className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">
               Add task
             </button>
-            <About />
           </div>
         </header>
 
         <Skills />
+        <Dashboard />
+        <About />
 
         <div className="grid gap-6 md:grid-cols-3">
           {columns.map((column) => (
@@ -117,3 +119,5 @@ export default function KanbanBoard() {
     </div>
   );
 }
+
+import type {} from 'react';
