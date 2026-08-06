@@ -43,3 +43,13 @@ Preferred contact:
 - WhatsApp: 09027957527
 
 Replace with your real contact details before publishing.
+
+## Analytics
+
+To enable Google Analytics, set the `NEXT_PUBLIC_GA_ID` environment variable in your deployment (for example `G-XXXXXXX`). The layout will inject the gtag script when this variable is present.
+
+Example (Vercel):
+
+1. Go to your project settings -> Environment Variables.
+2. Add `NEXT_PUBLIC_GA_ID` with value `G-XXXXXXX`.
+3. Redeploy the site.
