@@ -1,20 +1,20 @@
 const projects = [
   {
     title: "KanbanFlow SaaS",
-    description: "A real-time task management system with drag-and-drop functionality and instant database sync.",
-    tech: ["Next.js", "Supabase", "Dnd-kit", "TypeScript"],
-    link: "/kanban", // Link to your internal page
+    description: "A real-time task management system with drag-and-drop styling and instant sync.",
+    tech: ["Next.js", "Supabase", "TypeScript", "Tailwind"],
+    link: "/kanban",
     github: "https://github.com/yourusername/kanban",
-    image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?auto=format&fit=crop&w=800&q=80" 
+    image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?auto=format&fit=crop&w=800&q=80",
   },
   {
     title: "StockPro Analytics",
-    description: "Inventory dashboard featuring real-time data visualization, low-stock alerts, and financial reporting.",
-    tech: ["Recharts", "PostgreSQL", "Tailwind CSS", "Node.js"],
+    description: "Inventory dashboard with trend charts, low stock signals, and financial reporting.",
+    tech: ["Recharts", "PostgreSQL", "Tailwind CSS", "React"],
     link: "/inventory",
     github: "https://github.com/yourusername/inventory",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
-  }
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",
+  },
 ];
 
 export default function ProjectGallery() {

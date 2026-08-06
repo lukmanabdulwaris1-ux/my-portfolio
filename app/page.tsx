@@ -1,123 +1,76 @@
-"use client";
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../src/lib/supabase';
-import { SortableTask } from '../src/components/SortableTask';
+import Link from 'next/link';
 import About from '../src/components/About';
-import Dashboard from '../src/components/Dashboard';
+import Contact from '../src/components/Contact';
+import Projects from '../src/components/Projects';
 import Skills from '../src/components/Skills';
 
-type Task = {
-  id: string;
-  title: string;
-  status: 'To Do' | 'In Progress' | 'Done';
-};
-
-const initialTasks: Task[] = [
-  { id: '1', title: 'Design landing page', status: 'To Do' },
-  { id: '2', title: 'Set up authentication', status: 'In Progress' },
-  { id: '3', title: 'Deploy portfolio site', status: 'Done' },
-];
-
-const columns = ['To Do', 'In Progress', 'Done'] as const;
-
-export default function KanbanBoard() {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [loading, setLoading] = useState(true);
-
-    const dragItem = React.useRef<string | null>(null);
-    const dragOverItem = React.useRef<string | null>(null);
-  useEffect(() => {
-    async function fetchTasks() {
-      try {
-        const { data } = await supabase.from('tasks').select('*').order('position', { ascending: true });
-        if (data) setTasks(data as Task[]);
-      } catch (e) {
-        // supabase may be a mock in this environment — ignore errors
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchTasks();
-  }, []);
-
-  async function addTask(status: Task['status'], title: string) {
-    const tempId = 'temp_' + Date.now();
-    const optimistic = { id: tempId, title, status } as any;
-    setTasks(prev => [...prev, optimistic]);
-
-    try {
-      const from = (supabase as any).from ? (supabase as any).from('tasks') : null;
-      if (from && typeof from.insert === 'function') {
-        const res = await from.insert([{ title, status }]).select();
-        const data = res && (res.data ? (Array.isArray(res.data) ? res.data[0] : res.data) : res);
-        if (data) {
-          setTasks(prev => prev.map(t => t.id === tempId ? data : t));
-          return;
-        }
-      }
-
-      // No real backend available — replace temp id with a generated server id
-      const serverTask = { id: 'srv_' + Date.now(), title, status };
-      setTasks(prev => prev.map(t => t.id === tempId ? serverTask : t));
-    } catch (err) {
-      console.error('addTask failed', err);
-      setTasks(prev => prev.filter(t => t.id !== tempId));
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 p-10 text-white">
-        <div className="mx-auto max-w-2xl rounded-3xl border border-slate-800 bg-slate-900/80 p-10 text-center">
-          Loading board...
-        </div>
-      </div>
-    );
-  }
-
+export default function Home() {
   return (
-    <div className="min-h-screen bg-slate-950 p-10 text-white">
-      <div className="mx-auto max-w-6xl space-y-8">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Full-Stack Kanban</h1>
-            <p className="text-sm text-slate-400">Organize your next development tasks cleanly.</p>
+    <main className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="mx-auto max-w-6xl px-6 py-16">
+        <header className="grid gap-12 lg:grid-cols-[1.4fr_0.9fr] lg:items-center">
+          <div className="space-y-8">
+            <div className="inline-flex items-center rounded-full bg-blue-500/10 px-4 py-2 text-sm text-blue-300 ring-1 ring-blue-500/30">
+              Full-stack portfolio · React · Next.js · Data-driven UI
+            </div>
+            <div>
+              <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl">
+                Building polished frontends for modern SaaS and analytics products.
+              </h1>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+                I design, develop, and deploy production-ready applications with strong product intuition,
+                scalable architecture, and fast user experiences.
+              </p>
+            </div>
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <Link
+                href="/kanban"
+                className="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-500"
+              >
+                View Kanban Demo
+              </Link>
+              <Link
+                href="/inventory"
+                className="inline-flex items-center justify-center rounded-full border border-slate-800 bg-slate-900 px-6 py-3 text-sm font-semibold text-slate-200 transition hover:border-blue-500 hover:text-white"
+              >
+                Inventory Dashboard
+              </Link>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={() => addTask('To Do', 'New task')} className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">
-              Add task
-            </button>
-          </div>
-        </header>
 
-        <Skills />
-        <Dashboard />
-        <About />
-
-        <div className="grid gap-6 md:grid-cols-3">
-          {columns.map((column) => (
-            <div key={column} className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-slate-100">{column}</h2>
-                <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-400">
-                  {tasks.filter((task) => task.status === column).length}
-                </span>
-              </div>
-
-              <div className="space-y-4">
-                {tasks
-                  .filter((task) => task.status === column)
-                  .map((task) => (
-                    <SortableTask key={task.id} id={task.id} content={task.title} />
-                  ))}
+          <aside className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-8 shadow-2xl shadow-slate-950/30">
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-500">What I build</p>
+            <div className="mt-8 space-y-6">
+              <p className="text-slate-300 leading-relaxed">
+                SaaS dashboards, collaboration tools, and analytics applications with a focus on clarity,
+                speed, and long-term maintainability.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Stat label="Fast frontends" value="Next.js + Tailwind" />
+                <Stat label="Data flow" value="Supabase & PostgreSQL" />
+                <Stat label="Type-safe" value="TypeScript everywhere" />
+                <Stat label="Design" value="Responsive UI systems" />
               </div>
             </div>
-          ))}
+          </aside>
+        </header>
+
+        <div className="mt-20 space-y-24">
+          <Projects />
+          <Skills />
+          <About />
+          <Contact />
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
-import type {} from 'react';
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-3xl border border-slate-800 bg-slate-950/80 p-5">
+      <p className="text-xs uppercase tracking-[0.35em] text-slate-500">{label}</p>
+      <p className="mt-3 text-lg font-semibold text-white">{value}</p>
+    </div>
+  );
+}

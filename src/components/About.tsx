@@ -50,6 +50,15 @@ export default function About() {
               <p className="text-slate-500 text-sm">Optimizing for Lighthouse scores and sub-second load times.</p>
             </div>
           </div>
+          <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl flex gap-4">
+            <div className="bg-pink-500/10 p-3 rounded-lg h-fit">
+              <Heart className="text-pink-400" size={24} />
+            </div>
+            <div>
+              <h4 className="text-white font-semibold">Product Mindset</h4>
+              <p className="text-slate-500 text-sm">I build solutions that align with business goals and scale over time.</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
